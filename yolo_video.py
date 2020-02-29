@@ -3,7 +3,7 @@ import time
 import cv2
 import os
 from datetime import datetime
-from PIL import Image
+# from PIL import Image
 
 def model(frame, net, yolo, iconfidence, ithreshold):
 
@@ -82,7 +82,6 @@ def model(frame, net, yolo, iconfidence, ithreshold):
         # loop over the indexes we are keeping
         for i in idxs.flatten():
             # extract the bounding box coordinates
-
             (x, y) = (boxes[i][0], boxes[i][1])
             (w, h) = (boxes[i][2], boxes[i][3])
             # draw a bounding box rectangle and label on the frame
