@@ -78,6 +78,7 @@ def setup(
     
         # by defaul tracker needs model to be run
         tracker_found_bounding_box = False
+        best_bounding_box = None
         for counter in count(start=0, step=1): # counts up infinitely starting at 0
             frame = get_latest_frame()
 
@@ -85,7 +86,7 @@ def setup(
                 #
                 # call model
                 #
-                boxes, confidences, classIDs = model(frame, confidence, threshold)
+                boxes, confidences, classIDs = modeling.get_bounding_boxes(frame, confidence, threshold)
                 tracker_found_bounding_box = tracker.init(frame,boxes)
                 # FIXME: best_bounding_box needs to be calculated here! (either call tracker)
             else:
@@ -95,15 +96,18 @@ def setup(
                 # TODO: make sure this works (untested)
                 best_bounding_box, tracker_found_bounding_box = tracker.update(frame)
 
-            # figure out where to aim
-            x, y = aiming.aim(best_bounding_box)
+            if best_bounding_box:
+                # figure out where to aim
+                x, y = aiming.aim(best_bounding_box)
             
-            # optional value for debugging/testing
-            if not (on_next_frame is None):
-                on_next_frame(counter, frame, (boxes, confidences), (x,y))
+                # optional value for debugging/testing
+                if not (on_next_frame is None):
+                    on_next_frame(counter, frame, (boxes, confidences), (x,y))
             
-            # send data to embedded
-            send_output(x, y)
+                # send data to embedded
+                send_output(x, y)
+            else:
+                print('Best not found')
     
     # 
     # option #3
