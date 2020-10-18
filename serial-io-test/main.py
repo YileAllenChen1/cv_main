@@ -2,6 +2,8 @@ import serial
 from tkinter import *
 import threading
 
+SERIAL_PORT = '/dev/ttyACM0'  # Change this to be the serial port of the board
+
 LED_CALLBACKS = [lambda:adjustLED(0),lambda:adjustLED(1),lambda:adjustLED(2),lambda:adjustLED(3),lambda:adjustLED(4),
                  lambda:adjustLED(5),lambda:adjustLED(6),lambda:adjustLED(7),lambda:adjustLED(8),lambda:adjustLED(9)]
 LED_VARIABLES = []
@@ -84,7 +86,7 @@ def buttonListener():
 
 SERIAL = serial.Serial
 def main():
-    with serial.Serial('/dev/ttyACM0', timeout=3) as ser:
+    with serial.Serial(SERIAL_PORT, timeout=3) as ser:
         global SERIAL
         SERIAL = ser
         window = buildWindow()
