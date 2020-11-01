@@ -25,17 +25,26 @@ import source.aiming._tests.test_aiming as test_aiming
 # debugger option #1
 #
 frames = []
+outputs = []
 def debug_each_frame(counter, frame, model_ouput, aiming_output):
     """
     this function is designed to be called every time main() processes a frame
     its only purpose is to bundle all of the debugging output
     """
     
-    print('counter = ', counter)
+    #print('counter = ', counter)
     
     # extract the output
     boxes, confidences = model_ouput
     x, y = aiming_output
+
+    # Prints the lists of centers of each bounding box for each frame. List is in output.py,
+    # I had to remove the last comma and put it in brackets
+    temp = []   # list of centers
+    for bbox in boxes:
+        target = (int(bbox[0] + bbox[2]/2), int(bbox[1] + bbox[3]/2))   # center of bbox
+        temp.append(target)
+    print(f"{temp},")
     
     # load/show the image
     image = Image(frame)
