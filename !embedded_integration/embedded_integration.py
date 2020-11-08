@@ -68,7 +68,7 @@ def main():
     if platform.startswith('linux'):
         ser = locateLinuxSerial()
     elif platform.startswith('win'):
-        pass
+        ser = locateWindowsSerial()
     else:
         raise Exception('Unsupported platform.')
 
