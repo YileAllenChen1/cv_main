@@ -1,0 +1,25 @@
+Embedded Integration Protocol
+
+----------------------- CRC Echo ---------------------------------
+This function can be used to identify the serial port assigned
+to the DJI board. The host sends 16 bytes of random data to
+the board and then expects the CRC32 checksum of the concatenation
+of the random data and the string "TAMU RoboMasters". The host
+will additionally calculate the checksum on its own, and if
+the 4 bytes received from the board matches the checksum
+calculated by the host, the host can be confident it is talking
+to the board and not some other serial device.
+
+Origin | Size  |  Data
+ Host  |  1    |  Command ID (ID=5)
+ Host  |  16   |  Random data
+ Board |  4    |  crc32([Random data] + "TAMU RoboMasters")
+
+--------------------- String Echo --------------------------------
+Echo a string from the board back to the host.
+
+Origin | Size  |  Data
+ Host  |  1    |  Command ID (ID=10)
+ Host  |  n    |  String contents
+ Host  |  1    |  Null character (0)
+ Board |  n    |  String contents
