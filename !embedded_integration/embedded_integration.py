@@ -20,6 +20,18 @@ def Func_CRC_Echo(ser):
 
     return myCRC == resultCRC
 
+def Func_String_Echo(ser, text: str):
+    '''Echos a string from the host the board.
+    This function will print the received string.
+    '''
+    text = text.encode()
+    ser.write(b'\x0A')
+    ser.write(len(text).to_bytes(4, 'big'))
+    ser.write(text)
+    receivedBytes = ser.read(len(text))
+    receivedText = receivedBytes.decode()
+    print(receivedText)
+
 def locateLinuxSerial():
     print('Locating serial device on Linux host.')
     devices = os.listdir('/dev')
@@ -71,6 +83,8 @@ def main():
         ser = locateWindowsSerial()
     else:
         raise Exception('Unsupported platform.')
+    Func_String_Echo(ser, 'Hello there!')
+    print('Sent')
 
 if __name__ == '__main__':
     main()

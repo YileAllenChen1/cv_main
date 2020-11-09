@@ -67,10 +67,12 @@ void Execute_Function(void);
 void Reset_State(void);
 void Func_Await_Command(void);
 void Func_CRC_Echo(void);
+void Func_String_Echo(void);
 
 // Define Function Codes
 const uint8_t FUNC_AWAIT_COMMAND = 0;
 const uint8_t FUNC_CRC_ECHO = 5;
+const uint8_t FUNC_STRING_ECHO = 10;
 
 // Function and Buffer States
 uint8_t BUFFER[64];
@@ -102,6 +104,9 @@ void Execute_Function(void)
 			break;
 		case FUNC_CRC_ECHO:
 			Func_CRC_Echo();
+			break;
+		case FUNC_STRING_ECHO:
+			Func_String_Echo();
 			break;
 	}
 }
@@ -143,8 +148,6 @@ void Func_CRC_Echo()
 				crc_buffer[i] = text[i-16];
 			}
 			
-			
-			
 			// CRC32
 			uint32_t polynomial = 0xEDB88320;
 			uint32_t crc = 0xFFFFFFFF;
@@ -175,6 +178,40 @@ void Func_CRC_Echo()
 			//CDC_Transmit_FS(crc_buffer, 32);
 			
 			Reset_State();
+			break;
+		}
+	}
+}
+
+
+uint32_t stringLength;
+uint32_t byteIndex;
+void Func_String_Echo()
+{
+	switch (FUNCTION_STATE)
+	{
+		case 0: // Receive command
+			DIGEST_LIMIT = 4;
+			FUNCTION_STATE = 1;
+			break;
+		case 1: // Receive string length
+		{
+			stringLength = (BUFFER[0] << 24) | (BUFFER[1] << 16) | (BUFFER[2] << 8) | BUFFER[3];
+			byteIndex = 0;
+			DIGEST_LIMIT = 1;
+			FUNCTION_STATE = 2;
+			break;
+		}
+		case 2: // Echo characters
+		{
+			uint8_t outBuffer[1];
+			outBuffer[0] = BUFFER[0];
+			CDC_Transmit_FS(outBuffer, 1);
+			byteIndex++;
+			if (byteIndex == stringLength)
+			{
+				Reset_State();
+			}
 			break;
 		}
 	}

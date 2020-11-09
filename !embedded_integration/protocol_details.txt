@@ -20,6 +20,6 @@ Echo a string from the board back to the host.
 
 Origin | Size  |  Data
  Host  |  1    |  Command ID (ID=10)
+ Host  |  4    |  String length (n)
  Host  |  n    |  String contents
- Host  |  1    |  Null character (0)
  Board |  n    |  String contents
