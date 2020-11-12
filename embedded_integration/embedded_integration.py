@@ -3,6 +3,7 @@ import zlib
 import serial
 from serial.serialutil import SerialException
 
+
 def Func_Debug(ser):
     '''Function to send custom data
     used for debugging.
