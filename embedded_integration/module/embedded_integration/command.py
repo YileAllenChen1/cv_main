@@ -75,3 +75,27 @@ class String_Echo(Command):
             print('Currently at: ' + outString)
         
         return outString
+    
+    def __repr__(self):
+        idValue = int.from_bytes(self.getCommandID(), 'big')
+        nameValue = self.getCommandName()
+        return f'{nameValue}(id={idValue}, text="{self.__text}")'
+
+class Debug(Command):
+    '''Function to send custom data
+    used for debugging.
+    '''
+
+    def getCommandID(self):
+        return b'\x03'  # ID: 3
+    
+    def getCommandName(self):
+        return 'Debug'
+    
+    def execute(self, ser: Serial):
+        print('Trying to run debug')
+        ser.write(self.getCommandID()) # Debug command code
+        values = ser.read(3)
+        values = values.decode()
+        print('Ran debug')
+        print('Received the text: ' + values)
