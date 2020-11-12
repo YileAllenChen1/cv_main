@@ -3,6 +3,17 @@ import zlib
 import serial
 from serial.serialutil import SerialException
 
+def Func_Debug(ser):
+    '''Function to send custom data
+    used for debugging.
+    '''
+    print('Trying to run debug')
+    ser.write(b'\x03') # Debug command code
+    values = ser.read(3)
+    values = values.decode()
+    print('Ran debug')
+    print('Received the text: ' + values)
+
 def Func_CRC_Echo(ser):
     '''Returns True/False depending on whether
     the board respeonds correctly to the echo.
@@ -28,9 +39,12 @@ def Func_String_Echo(ser, text: str):
     ser.write(b'\x0A')
     ser.write(len(text).to_bytes(4, 'big'))
     ser.write(text)
-    receivedBytes = ser.read(len(text))
-    receivedText = receivedBytes.decode()
-    print(receivedText)
+    outString = ''
+    for i in range(len(text)):
+        outString += ser.read(1).decode()
+        print('Currently at: ' + outString)
+    
+    print(outString)
 
 def locateLinuxSerial():
     print('Locating serial device on Linux host.')
@@ -61,7 +75,7 @@ def locateWindowsSerial():
     for serialDevice in serialDevices:
         print('Checking device: '+ serialDevice)
         try:
-            ser = serial.Serial(serialDevice, timeout=1)
+            ser = serial.Serial(serialDevice, timeout=0.1)
             if Func_CRC_Echo(ser):
                 print('Device: ' + serialDevice + ' responded correctly')
                 located = True
@@ -83,8 +97,9 @@ def main():
         ser = locateWindowsSerial()
     else:
         raise Exception('Unsupported platform.')
+
+    #Func_Debug(ser)
     Func_String_Echo(ser, 'Hello there!')
-    print('Sent')
 
 if __name__ == '__main__':
     main()

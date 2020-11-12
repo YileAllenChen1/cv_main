@@ -66,11 +66,13 @@ void Digest_Bytes(uint8_t* inputBuffer, uint32_t *bufferLength);
 void Execute_Function(void);
 void Reset_State(void);
 void Func_Await_Command(void);
+void Func_Debug(void);
 void Func_CRC_Echo(void);
 void Func_String_Echo(void);
 
 // Define Function Codes
 const uint8_t FUNC_AWAIT_COMMAND = 0;
+const uint8_t FUNC_DEBUG = 3;
 const uint8_t FUNC_CRC_ECHO = 5;
 const uint8_t FUNC_STRING_ECHO = 10;
 
@@ -102,6 +104,9 @@ void Execute_Function(void)
 		case FUNC_AWAIT_COMMAND:
 			Func_Await_Command();
 			break;
+		case FUNC_DEBUG:
+			Func_Debug();
+			break;
 		case FUNC_CRC_ECHO:
 			Func_CRC_Echo();
 			break;
@@ -122,6 +127,25 @@ void Func_Await_Command()
 {
 	CURRENT_FUNCTION = BUFFER[0];
 	Execute_Function();
+}
+
+void Func_Debug()
+{
+	switch (FUNCTION_STATE)
+	{
+		case 0:
+		{
+			uint8_t buf[1] = {'A'};
+			CDC_Transmit_FS(buf, 1);
+			buf[0] = 'B';
+			CDC_Transmit_FS(buf, 1);
+			buf[0] = 'C';
+			CDC_Transmit_FS(buf, 1);
+			HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, GPIO_PIN_RESET);
+			Reset_State();
+			break;
+		}
+	}
 }
 
 void Func_CRC_Echo()
@@ -204,6 +228,7 @@ void Func_String_Echo()
 		}
 		case 2: // Echo characters
 		{
+			HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, GPIO_PIN_RESET);
 			uint8_t outBuffer[1];
 			outBuffer[0] = BUFFER[0];
 			CDC_Transmit_FS(outBuffer, 1);
