@@ -34,7 +34,7 @@ class CRC_Echo(Command):
     '''
 
     def getCommandID(self):
-        return b'\x05'
+        return b'\x05'  # ID: 5
     
     def getCommandName(self):
         return 'CRC_Echo'
@@ -49,3 +49,29 @@ class CRC_Echo(Command):
         resultCRC = int.from_bytes(result, 'big')
 
         return myCRC == resultCRC
+
+class String_Echo(Command):
+    '''Echos a string from the host the board.
+    This will return the received string.
+    '''
+
+    def __init__(self, text):
+        self.__text = text
+    
+    def getCommandID(self):
+        return b'\x0A'  # ID: 10
+    
+    def getCommandName(self):
+        return 'String_Echo'
+    
+    def execute(self, ser: Serial):
+        text = self.__text.encode()
+        ser.write(self.getCommandID())
+        ser.write(len(text).to_bytes(4, 'big'))
+        ser.write(text)
+        outString = ''
+        for i in range(len(text)):
+            outString += ser.read(1).decode()
+            print('Currently at: ' + outString)
+        
+        return outString
