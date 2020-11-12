@@ -3,7 +3,7 @@ import zlib
 from abc import ABCMeta, abstractmethod
 from serial import Serial
 
-__all__ = ['CRC_Echo']
+__all__ = ['CRC_Echo', 'String_Echo', 'Debug']
 
 class Command(metaclass=ABCMeta):
     '''Abstract class used to create command classes.'''
