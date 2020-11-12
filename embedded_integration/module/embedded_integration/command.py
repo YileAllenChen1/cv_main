@@ -69,10 +69,7 @@ class String_Echo(Command):
         ser.write(self.getCommandID())
         ser.write(len(text).to_bytes(4, 'big'))
         ser.write(text)
-        outString = ''
-        for i in range(len(text)):
-            outString += ser.read(1).decode()
-            print('Currently at: ' + outString)
+        outString = ser.read(len(text)).decode()
         
         return outString
     
