@@ -1,3 +1,5 @@
+import os
+import zlib
 from abc import ABCMeta, abstractmethod
 from serial import Serial
 
@@ -27,6 +29,9 @@ class Command(metaclass=ABCMeta):
         return f'{nameValue}(id={idValue})'
 
 class CRC_Echo(Command):
+    '''Returns True/False depending on whether
+    the board respeonds correctly to the echo.
+    '''
 
     def getCommandID(self):
         return b'\x05'
@@ -35,4 +40,12 @@ class CRC_Echo(Command):
         return 'CRC_Echo'
     
     def execute(self, ser: Serial):
-        pass
+        random = os.urandom(16)
+        text = b'TAMU RoboMasters'
+        data = random + text
+        myCRC = zlib.crc32(data)
+        ser.write(self.getCommandID() + random)
+        result = ser.read(4)
+        resultCRC = int.from_bytes(result, 'big')
+
+        return myCRC == resultCRC
