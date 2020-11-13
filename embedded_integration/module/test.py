@@ -1,4 +1,4 @@
-from embedded_integration.integration_wrapper import IntegrationWrapper
+from embedded_integration import IntegrationWrapper
 
 iw = IntegrationWrapper()
 text = iw.echoString('Hello there!')
