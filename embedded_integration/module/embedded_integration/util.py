@@ -4,7 +4,7 @@ from serial.serialutil import SerialException
 from . import command
 from . import settings
 
-__all__ = ['autoLocateSerial']
+__all__ = ['autoLocateSerial', 'openFreshSerial', 'readDynamic']
 
 def autoLocateSerial() -> Serial:
     platform = os.sys.platform
