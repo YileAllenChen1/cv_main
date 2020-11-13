@@ -2,6 +2,9 @@ import serial
 from . import settings
 
 class LogSerial(serial.Serial):
+    '''Used to grab data that goes through
+    serial for logging purposes.
+    '''
 
     def write(self, data: bytes) -> int:
         if settings.RECORD_COMMUNICATION:
