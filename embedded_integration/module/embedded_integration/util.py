@@ -1,7 +1,7 @@
 import os
 from serial import Serial
 from serial.serialutil import SerialException
-from .command import CRC_Echo
+from . import command
 from . import settings
 
 __all__ = ['autoLocateSerial']
@@ -16,12 +16,12 @@ def autoLocateSerial() -> Serial:
         raise NotImplementedError(f'Platform: {platform} is unsupported.')
     return ser
 
+def openFreshSerial(port: str) -> Serial:
+    return Serial(port, timeout=settings.SERIAL_TIMEOUT)
+
 def readDynamic(ser: Serial, length: int) -> bytes:
     data = ser.read(length + 4)
     return data[4:]
-
-def __openFreshSerial(port: str) -> Serial:
-    return Serial(port, timeout=settings.SERIAL_TIMEOUT)
 
 def __locateLinuxSerial() -> Serial:
     print('Locating serial device on Linux host.')
@@ -34,7 +34,7 @@ def __locateLinuxSerial() -> Serial:
         print('Checking device: /dev/' + serialDevice)
         try:
             ser = Serial('/dev/' + serialDevice, timeout=0.1)
-            cmd = CRC_Echo()
+            cmd = command.CRC_Echo()
             if cmd.execute(ser):
                 print('Device: /dev/' + serialDevice + ' responded correctly')
                 located = True
@@ -45,7 +45,7 @@ def __locateLinuxSerial() -> Serial:
             continue
     if located:
         ser.close()
-        return __openFreshSerial('/dev/' + serialDevice)
+        return openFreshSerial('/dev/' + serialDevice)
     else:
         raise IOError('Unable to locate serial port. Possible permissions issue?')
 
@@ -57,7 +57,7 @@ def __locateWindowsSerial() -> Serial:
         print('Checking device: '+ serialDevice)
         try:
             ser = Serial(serialDevice, timeout=0.1)
-            cmd = CRC_Echo()
+            cmd = command.CRC_Echo()
             if cmd.execute(ser):
                 print('Device: ' + serialDevice + ' responded correctly')
                 located = True
@@ -68,6 +68,6 @@ def __locateWindowsSerial() -> Serial:
             continue
     if located:
         ser.close()
-        return __openFreshSerial(serialDevice)
+        return openFreshSerial(serialDevice)
     else:
         raise IOError('Unable to locate serial port.')
