@@ -1,8 +1,8 @@
 import os
-from serial import Serial
 from serial.serialutil import SerialException
 from . import command
 from . import settings
+from .logging import LogSerial as Serial
 
 __all__ = ['autoLocateSerial', 'openFreshSerial', 'readDynamic']
 

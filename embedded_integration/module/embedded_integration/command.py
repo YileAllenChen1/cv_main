@@ -1,7 +1,7 @@
 import os
 import zlib
 from abc import ABCMeta, abstractmethod
-from serial import Serial
+from .logging import LogSerial as Serial
 from . import util
 
 __all__ = ['CRC_Echo', 'String_Echo', 'Debug']
