@@ -64,6 +64,7 @@ void MX_FREERTOS_Init(void);
 // Function Definitions
 void Digest_Bytes(uint8_t* inputBuffer, uint32_t *bufferLength);
 void Execute_Function(void);
+void LED_Binary(uint8_t);
 void Reset_State(void);
 void Func_Await_Command(void);
 void Func_Debug(void);
@@ -76,8 +77,11 @@ const uint8_t FUNC_DEBUG = 3;
 const uint8_t FUNC_CRC_ECHO = 5;
 const uint8_t FUNC_STRING_ECHO = 10;
 
+// Constants
+const uint8_t BUFFER_SIZE = 64;
+
 // Function and Buffer States
-uint8_t BUFFER[64];
+uint8_t BUFFER[BUFFER_SIZE];
 uint8_t DIGEST_LIMIT = 1;
 uint8_t CURRENT_FUNCTION = FUNC_AWAIT_COMMAND;
 uint8_t FUNCTION_STATE = 0;
@@ -85,7 +89,7 @@ uint8_t INDEX = 0;
 
 void Digest_Bytes(uint8_t* inputBuffer, uint32_t *bufferLength)
 {
-	HAL_GPIO_WritePin(GPIOG, LED_PG1_Pin, GPIO_PIN_RESET);
+	//HAL_GPIO_WritePin(GPIOG, LED_PG1_Pin, GPIO_PIN_RESET);
 	for (uint8_t i = 0; i < *bufferLength; i++) {
 		BUFFER[INDEX] = inputBuffer[i];
 		INDEX++;
@@ -135,13 +139,15 @@ void Func_Debug()
 	{
 		case 0:
 		{
-			uint8_t buf[1] = {'A'};
-			CDC_Transmit_FS(buf, 1);
-			buf[0] = 'B';
-			CDC_Transmit_FS(buf, 1);
-			buf[0] = 'C';
-			CDC_Transmit_FS(buf, 1);
-			HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOE, LED_PE11_Pin, GPIO_PIN_RESET);
+			
+			uint8_t* buf;
+			buf = (uint8_t*)malloc(7);
+			buf[4] = 'A';
+			buf[5] = 'B';
+			buf[6] = 'C';
+			CDC_Transmit_FS(buf, 7);
+			free(buf);
 			Reset_State();
 			break;
 		}
@@ -210,6 +216,7 @@ void Func_CRC_Echo()
 
 uint32_t stringLength;
 uint32_t byteIndex;
+uint8_t* stringBuffer;
 void Func_String_Echo()
 {
 	switch (FUNCTION_STATE)
@@ -221,25 +228,68 @@ void Func_String_Echo()
 		case 1: // Receive string length
 		{
 			stringLength = (BUFFER[0] << 24) | (BUFFER[1] << 16) | (BUFFER[2] << 8) | BUFFER[3];
-			byteIndex = 0;
-			DIGEST_LIMIT = 1;
+			stringLength += 4; // WORKAROUND FOR SENDING DYNAMIC ARRAY
+			byteIndex = 4; // WORKAROUND FOR SENDING DYNAMIC ARRAY
+			
+			if (stringLength <= BUFFER_SIZE)
+			{
+				DIGEST_LIMIT = stringLength;
+			} else
+			{
+				DIGEST_LIMIT = BUFFER_SIZE;
+			}
+			
+			stringBuffer = (uint8_t*)malloc(stringLength * sizeof(uint8_t));
+			
 			FUNCTION_STATE = 2;
 			break;
 		}
-		case 2: // Echo characters
+		case 2: // Fill the buffer
 		{
-			HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, GPIO_PIN_RESET);
-			uint8_t outBuffer[1];
-			outBuffer[0] = BUFFER[0];
-			CDC_Transmit_FS(outBuffer, 1);
-			byteIndex++;
+			//HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, GPIO_PIN_RESET);
+			
+			for (uint8_t i=0; i<DIGEST_LIMIT; i++)
+			{
+				stringBuffer[byteIndex] = BUFFER[i];
+				byteIndex++;
+			}
+			
 			if (byteIndex == stringLength)
 			{
+				// stringBuffer is filled
+				CDC_Transmit_FS(stringBuffer, stringLength);
+				free(stringBuffer);
 				Reset_State();
+			} else
+			{
+				if (stringLength - byteIndex <= BUFFER_SIZE)
+				{
+					DIGEST_LIMIT = stringLength - byteIndex;
+				} else
+				{
+					DIGEST_LIMIT = BUFFER_SIZE;
+				}
 			}
+			
 			break;
 		}
 	}
+}
+
+/*
+	This function sets LEDs 1-8 to represent the parameter in binary.
+	LED 1 is the MSB (the one next to the H on the board)
+*/
+void LED_Binary(uint8_t value)
+{
+	HAL_GPIO_WritePin(GPIOG, LED_PG1_Pin, (value & 128) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG2_Pin, (value & 64) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG3_Pin, (value & 32) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG4_Pin, (value & 16) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG5_Pin, (value & 8) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG6_Pin, (value & 4) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG7_Pin, (value & 2) ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOG, LED_PG8_Pin, (value & 1) ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 /* USER CODE END 0 */

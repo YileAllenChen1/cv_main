@@ -2,6 +2,7 @@ import os
 import zlib
 from abc import ABCMeta, abstractmethod
 from serial import Serial
+from . import util
 
 __all__ = ['CRC_Echo', 'String_Echo', 'Debug']
 
@@ -66,10 +67,12 @@ class String_Echo(Command):
     
     def execute(self, ser: Serial):
         text = self.__text.encode()
+        length = len(text)
         ser.write(self.getCommandID())
         ser.write(len(text).to_bytes(4, 'big'))
         ser.write(text)
-        outString = ser.read(len(text)).decode()
+        outBytes = util.readDynamic(ser, length)
+        outString = outBytes.decode()
         
         return outString
     
@@ -92,7 +95,7 @@ class Debug(Command):
     def execute(self, ser: Serial):
         print('Trying to run debug')
         ser.write(self.getCommandID()) # Debug command code
-        values = ser.read(3)
+        values = util.readDynamic(ser, 3)
         values = values.decode()
         print('Ran debug')
         print('Received the text: ' + values)

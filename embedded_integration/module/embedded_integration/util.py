@@ -16,6 +16,10 @@ def autoLocateSerial() -> Serial:
         raise NotImplementedError(f'Platform: {platform} is unsupported.')
     return ser
 
+def readDynamic(ser: Serial, length: int) -> bytes:
+    data = ser.read(length + 4)
+    return data[4:]
+
 def __openFreshSerial(port: str) -> Serial:
     return Serial(port, timeout=settings.SERIAL_TIMEOUT)
 
