@@ -231,9 +231,9 @@ void Func_String_Echo()
 			stringLength += 4; // WORKAROUND FOR SENDING DYNAMIC ARRAY
 			byteIndex = 4; // WORKAROUND FOR SENDING DYNAMIC ARRAY
 			
-			if (stringLength <= BUFFER_SIZE)
+			if (stringLength - byteIndex <= BUFFER_SIZE)
 			{
-				DIGEST_LIMIT = stringLength;
+				DIGEST_LIMIT = stringLength - byteIndex;
 			} else
 			{
 				DIGEST_LIMIT = BUFFER_SIZE;
@@ -258,6 +258,7 @@ void Func_String_Echo()
 			{
 				// stringBuffer is filled
 				CDC_Transmit_FS(stringBuffer, stringLength);
+				//LED_Binary(stringBuffer[4]);
 				free(stringBuffer);
 				Reset_State();
 			} else
